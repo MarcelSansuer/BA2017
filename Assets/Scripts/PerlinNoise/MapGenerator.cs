@@ -6,11 +6,15 @@ public class MapGenerator : MonoBehaviour {
 	public enum DrawMode{Noise, Color, Mesh};
 	public DrawMode mode; 
 
-	public int mapWidth;
-	public int mapHeight;
+	const int mapChunkSize = 241;
+
+	[Range(0,6)]
+	public int levelOfDetail;
 	public float noiseScale;
 
 	public float heightMultiplier;
+	public AnimationCurve meshHeightCurve;
+
 	public int seed;
 	public Vector2 myOffset;
 
@@ -25,17 +29,21 @@ public class MapGenerator : MonoBehaviour {
 	public void GenerateMap() {
 		OnValuedate ();
 
-		float[,] noiseMap = Noise.GenerateNoiseMap (mapWidth, mapHeight, noiseScale, octaves, persistence,lacunarity, seed, myOffset);
+		float[,] noiseMap = Noise.GenerateNoiseMap (mapChunkSize
+, mapChunkSize, noiseScale, octaves, persistence,lacunarity, seed, myOffset);
 
 		//Color the 2d map 
-		Color[] color = new Color[mapHeight * mapWidth];
-		for (int y = 0; y < mapHeight; ++y) {
-			for (int x = 0; x < mapWidth; ++x) {
+		Color[] color = new Color[mapChunkSize * mapChunkSize
+];
+		for (int y = 0; y < mapChunkSize; ++y) {
+			for (int x = 0; x < mapChunkSize
+	; ++x) {
 				float currentheight = noiseMap [x, y];
 
 				for(int i = 0; i < regions.Length; i++){
 					if (currentheight <= regions [i].height) { 
-						color [y * mapWidth + x] = regions [i].color;
+						color [y * mapChunkSize
+				 + x] = regions [i].color;
 						break;
 					}
 				}
@@ -48,9 +56,11 @@ public class MapGenerator : MonoBehaviour {
 			if (mode == DrawMode.Noise) {
 				display.drawTexture2D (GenerateTexture.TextureFromNoiseMap (noiseMap));
 			} else if (mode == DrawMode.Color) {
-				display.drawTexture2D (GenerateTexture.textureFromColorMap (mapWidth, mapHeight, color));
+				display.drawTexture2D (GenerateTexture.textureFromColorMap (mapChunkSize
+		, mapChunkSize, color));
 			} else if (mode == DrawMode.Mesh) {
-				display.drawMesh(MashGenerator.GenerateMash (noiseMap, heightMultiplier), GenerateTexture.textureFromColorMap (mapWidth, mapHeight, color));
+				display.drawMesh(MashGenerator.GenerateMash (noiseMap, heightMultiplier, meshHeightCurve, levelOfDetail), GenerateTexture.textureFromColorMap (mapChunkSize
+		, mapChunkSize, color));
 			}
 
 
@@ -67,10 +77,6 @@ public class MapGenerator : MonoBehaviour {
 	}
 
 	void OnValuedate(){
-		if (mapWidth < 1)
-			mapWidth = 1;
-		if (mapHeight < 1)
-			mapHeight = 1;
 		if (octaves < 0)
 			octaves = 0;
 		if (lacunarity < 1)

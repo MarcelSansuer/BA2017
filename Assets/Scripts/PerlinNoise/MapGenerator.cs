@@ -10,6 +10,7 @@ public class MapGenerator : MonoBehaviour {
 	public int mapHeight;
 	public float noiseScale;
 
+	public float heightMultiplier;
 	public int seed;
 	public Vector2 myOffset;
 
@@ -49,7 +50,7 @@ public class MapGenerator : MonoBehaviour {
 			} else if (mode == DrawMode.Color) {
 				display.drawTexture2D (GenerateTexture.textureFromColorMap (mapWidth, mapHeight, color));
 			} else if (mode == DrawMode.Mesh) {
-				display.drawMesh(MashGenerator.GenerateMash (noiseMap), GenerateTexture.textureFromColorMap (mapWidth, mapHeight, color));
+				display.drawMesh(MashGenerator.GenerateMash (noiseMap, heightMultiplier), GenerateTexture.textureFromColorMap (mapWidth, mapHeight, color));
 			}
 
 

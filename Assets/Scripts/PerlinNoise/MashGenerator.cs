@@ -3,11 +3,13 @@ using UnityEngine;
 
 public static class MashGenerator {
 
-	public static MeshData GenerateMash(float[,] heightMap, float heightMultiplier, AnimationCurve meshHeightCurve, int levelOfDetail){
+	public static MeshData GenerateMash(float[,] heightMap, float heightMultiplier, AnimationCurve _meshHeightCurve, int levelOfDetail){
+
+		AnimationCurve meshHeightCurve = new AnimationCurve (_meshHeightCurve.keys);
+
 		int width = heightMap.GetLength (0);
 		int height = heightMap.GetLength (1);
 
-		
 		int vertexIndex = 0;
 
 		int simplifiMesh;
@@ -26,8 +28,10 @@ public static class MashGenerator {
 
 		for (int y = 0; y < height; y += simplifiMesh) {
 			for (int x = 0; x < width; x += simplifiMesh) {
+				//lock(meshHeightCurve){
+					meshData.vertices [vertexIndex] = new Vector3 (topLeftX + x, meshHeightCurve.Evaluate(heightMap [x, y]) * heightMultiplier,topLeftZ - y);	
+				//}
 
-				meshData.vertices [vertexIndex] = new Vector3 (topLeftX + x, meshHeightCurve.Evaluate(heightMap [x, y]) * heightMultiplier,topLeftZ - y);
 				meshData.uvs [vertexIndex] = new Vector2(x / (float)width, y / (float)height);
 				if (x < width - 1 && y < height - 1) {
 					meshData.addTraingle (vertexIndex, vertexIndex + vertecPerLine + 1, vertexIndex + vertecPerLine);

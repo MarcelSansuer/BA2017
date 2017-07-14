@@ -33,16 +33,16 @@ public class MapGenerator : MonoBehaviour {
 	Queue<MapThreadInfo<MeshData>> meshDataThreadQueue = new Queue<MapThreadInfo<MeshData>> ();
 
 	//Threding for mapData
-	public void RequestMapData(Action<MapData> callback) {
+	public void RequestMapData(Vector2 center, Action<MapData> callback) {
 		ThreadStart threadStart = delegate {
-			MapDataThread (callback);
+			MapDataThread (center, callback);
 		};
 
 		new Thread (threadStart).Start ();
 	}
 
-	void MapDataThread(Action<MapData> callback) {
-		MapData mapData = GenerateMap ();
+	void MapDataThread(Vector2 center, Action<MapData> callback) {
+		MapData mapData = GenerateMap (center);
 		lock (mapDataThreadQueue) {
 			mapDataThreadQueue.Enqueue (new MapThreadInfo<MapData> (callback, mapData));
 		}
@@ -85,11 +85,11 @@ public class MapGenerator : MonoBehaviour {
 		}
 	}
 
-	public MapData GenerateMap()
+	public MapData GenerateMap(Vector2 center)
     {
         OnValuedate();
 
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, noiseScale, octaves, persistence, lacunarity, seed, myOffset);
+		float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, noiseScale, octaves, persistence, lacunarity, seed, center + myOffset);
 
         //Color the 2d map 
 		Color[] colorMap = new Color[mapChunkSize * mapChunkSize];
@@ -101,7 +101,7 @@ public class MapGenerator : MonoBehaviour {
 // show the result to the screen
     private void getDisplay()
     {
-		MapData mapData = GenerateMap();
+		MapData mapData = GenerateMap(Vector2.zero);
 
         if (FindObjectOfType<MapDisplay>())
         {

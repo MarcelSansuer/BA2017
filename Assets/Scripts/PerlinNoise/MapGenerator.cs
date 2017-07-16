@@ -99,7 +99,7 @@ public class MapGenerator : MonoBehaviour {
     }
 
 // show the result to the screen
-    private void getDisplay()
+	public void getDisplay()
     {
 		MapData mapData = GenerateMap(Vector2.zero);
 

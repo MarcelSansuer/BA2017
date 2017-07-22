@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 public class MapGenerator : MonoBehaviour {
 
+	public Noise.NormMode normMode;
 	public enum DrawMode{Noise, Color, Mesh};
 	public DrawMode mode; 
 
@@ -89,7 +90,7 @@ public class MapGenerator : MonoBehaviour {
     {
         OnValuedate();
 
-		float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, noiseScale, octaves, persistence, lacunarity, seed, center + myOffset);
+		float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, noiseScale, octaves, persistence, lacunarity, seed, center + myOffset, normMode);
 
         //Color the 2d map 
 		Color[] colorMap = new Color[mapChunkSize * mapChunkSize];

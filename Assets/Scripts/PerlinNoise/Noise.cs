@@ -3,20 +3,33 @@ using System.Collections;
 
 public static class Noise {
 
-	public static float[,] GenerateNoiseMap(int mapWidth, int mapHeight, float scale, int octaves, float persistance, float lacunarity, int seed, Vector2 myOffset) {
+	public enum NormMode{
+		LOCA,GLOBAL
+	};
+
+	public static float[,] GenerateNoiseMap(int mapWidth, int mapHeight, float scale, int octaves, float persistance, float lacunarity, int seed, Vector2 myOffset, NormMode normMode) {
 		float[,] noiseMap = new float[mapWidth,mapHeight];
 
 		if (scale <= 0) {
 			scale = 0.0001f;
 		}
 
+		//get maxvalue for global height
+		float maxGlobalHeight = 0;
+		float amplitude = 1;
+		float frequency = 1;
+
+
 		//randomaise the result (landscape)
 		System.Random rand = new System.Random(seed);
 		Vector2[] octaveOffset = new Vector2[octaves];
 		for (int i = 0; i < octaves; ++i) {
 			float offsetY = rand.Next (-1000, 1000) + myOffset.x;
-			float offsetX = rand.Next (-1000, 1000) + myOffset.y;
+			float offsetX = rand.Next (-1000, 1000) - myOffset.y;
 			octaveOffset [i] = new Vector2 (offsetX, offsetY);
+
+			maxGlobalHeight += amplitude;
+			amplitude += persistance;
 		}
 
 		//norm values
@@ -31,14 +44,14 @@ public static class Noise {
 		for (int y = 0; y < mapHeight; y++) {
 			for (int x = 0; x < mapWidth; x++) {
 
-				float amplitude = 1;
-				float frequency = 1;
+				 amplitude = 1;
+				 frequency = 1;
 				float noiseHeight = 0;
 
 				for (int i = 0; i < octaves; i++) {
 					
-					float sampleX = (x - halfWidth) / scale * frequency + octaveOffset[i].x;
-					float sampleY = (y - halfHeight) / scale * frequency + octaveOffset[i].y;
+					float sampleX = (x - halfWidth + octaveOffset[i].x) / scale * frequency ;
+					float sampleY = (y - halfHeight + octaveOffset[i].y) / scale * frequency ;
 					/*
 					float sampleX = (x-halfWidth) / scale * frequency;
 					float sampleY = (y-halfHeight) / scale * frequency;
@@ -53,7 +66,7 @@ public static class Noise {
 					amplitude *= persistance;
 					frequency *= lacunarity;
 				}
-
+				//min and max Noiseheigth for local
 				if (noiseHeight > maxNoiseHeight) {
 					maxNoiseHeight = noiseHeight;
 				} else if (noiseHeight < minNoiseHeight) {
@@ -65,7 +78,17 @@ public static class Noise {
 
 		for (int y = 0; y < mapHeight; y++) {
 			for (int x = 0; x < mapWidth; x++) {
-				noiseMap [x, y] = Mathf.InverseLerp (minNoiseHeight, maxNoiseHeight, noiseMap [x, y]);
+
+				if (normMode == NormMode.LOCA) {
+
+					noiseMap [x, y] = Mathf.InverseLerp (minNoiseHeight, maxNoiseHeight, noiseMap [x, y]);
+						
+				} else {
+						//TODO get globel max height value
+					float temp = noiseMap[x,y];
+					float normGlobalHeight = ((temp + 1) / (2f * maxGlobalHeight / 2.5f));
+					noiseMap [x, y] = normGlobalHeight;
+				}
 			}
 		}
 

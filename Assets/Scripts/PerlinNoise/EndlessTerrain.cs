@@ -26,7 +26,7 @@ public class EndlessTerrain : MonoBehaviour {
 
 
 	Dictionary<Vector2, TerrainChunk> terrainChunkDictionary = new Dictionary<Vector2, TerrainChunk>();
-	List<TerrainChunk> terrainChunksVisibleLastUpdate = new List<TerrainChunk>();
+	static List<TerrainChunk> terrainChunksVisibleLastUpdate = new List<TerrainChunk>();
 
 	void Start() {
 		mapGenerator = FindObjectOfType<MapGenerator>();
@@ -64,10 +64,6 @@ public class EndlessTerrain : MonoBehaviour {
 
 				if (terrainChunkDictionary.ContainsKey (viewedChunkCoord)) {
 					terrainChunkDictionary [viewedChunkCoord].UpdateTerrainChunk ();
-					if (terrainChunkDictionary [viewedChunkCoord].IsVisible ()) {
-						//when we have generate the chunk than we can dispaly
-						terrainChunksVisibleLastUpdate.Add (terrainChunkDictionary [viewedChunkCoord]);
-					}
 				} else {
 					//create a new chunk (Terrain out of plane and noise values)
 					terrainChunkDictionary.Add (viewedChunkCoord, new TerrainChunk (viewedChunkCoord, chunkSize, detailLevels,transform, mapMaterial));
@@ -83,6 +79,7 @@ public class EndlessTerrain : MonoBehaviour {
 		GameObject meshObject;
 		MeshRenderer meshRenderer;
 		MeshFilter meshFilter;
+		MeshCollider collider;
 
 		Vector2 position;
 		int size;
@@ -105,6 +102,7 @@ public class EndlessTerrain : MonoBehaviour {
 			meshObject = new GameObject("Terrain");
 			meshRenderer = meshObject.AddComponent<MeshRenderer>();
 			meshFilter = meshObject.AddComponent<MeshFilter>();
+			collider = meshObject.AddComponent<MeshCollider>();
 			meshRenderer.material = material;
 			meshObject.transform.position = new Vector3(position.x,0,position.y);
 			//meshObject.transform.localScale = Vector3.one * size /10f;
@@ -156,10 +154,13 @@ public class EndlessTerrain : MonoBehaviour {
 						if (meshLOD.hasMesh) {
 							previewLODIndex = index;
 							meshFilter.mesh = meshLOD.mesh;
+							collider.sharedMesh = meshLOD.mesh;
 						} else if(!meshLOD.hasRequestofmesh){
 							meshLOD.RequestofMesh (mapData);
 						}
 					}
+
+					terrainChunksVisibleLastUpdate.Add (this);
 				}
 
 				SetVisible (visible);
